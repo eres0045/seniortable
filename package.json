@@ -1,0 +1,1 @@
+{"dependencies":{"react":"^18.3.1","react-dom":"^18.3.1"},"devDependencies":{"@vitejs/plugin-react":"^4.3.0","vite":"^5.4.0"},"name":"qloo-app","private":true,"scripts":{"build":"vite build","dev":"vite","test":"node tests/test_qloo_client.mjs && node tests/test_senior.mjs"},"type":"module","version":"0.1.0"}
