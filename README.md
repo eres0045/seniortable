@@ -31,19 +31,39 @@ investing $25,000 in his favourite entry; top 3 finalists present live Nov 5.
    understanding of the problem space.
 
 ## Verification status
-- ✅ 23 tests passing (`npm test`): 7 client + 16 SeniorTable (constraint
+- ✅ 24 tests passing (`npm test`): 8 client + 16 SeniorTable (constraint
   filter, fallback, explanations, full handler flow, location retry, 503/405).
 - ✅ Production build verified (`npm run build`, 30 modules).
 - ✅ Key hygiene verified: zero `QLOO_API_KEY` references in the frontend
   bundle or `src/` — all Qloo calls go through `/api/recommend`.
-- ⏳ Live API integration test — blocked on the API key.
-- ⏳ Hosted-demo cold-visit check — blocked on GitHub push + Vercel deploy.
-- ⏳ Criteria checklist with per-criterion evidence — drafted above, finalized
-  at submission time after the live checks.
+- ✅ Live API integration test — PASSED 2026-10-27 (Vercel Production,
+  commit 9f55598, Ready 08:17 IST): "Jazz" + Nagpur → 2 restaurants;
+  "Italian" + Nagpur → 7 restaurants; each with a "Based on your taste for:"
+  seed line, a plain-language explanation, matched needs, and venue tags.
+  Earlier zero-result failures were traced to a wrong search endpoint
+  (`/v2/search`); the fix uses the official GET `/search` and insights
+  filter type `urn:entity:place` (see `lib/qloo.js`).
+- ✅ Hosted-demo cold-visit check — https://seniortable.vercel.app live on
+  Vercel Production (commit 9f55598, Ready 2026-10-27 08:17 IST).
+- ✅ Criteria checklist with per-criterion evidence (finalized 2026-10-27):
+  1. Technological Implementation — server-side Qloo search (`/search`)
+     seeds taste entities, `/v2/insights` returns place recommendations
+     ranked by taste affinity, and results are filtered by verifiable
+     venue tags with explanations; no fake data, clear 503 without a key.
+  2. Design — complete flow: likes + needs + city → ranked restaurants
+     with explanations, matched-needs badges, tags, dining tips, and a
+     not-medical-advice disclaimer; not a bare API demo.
+  3. Potential Impact — seniors choosing a restaurant face real friction
+     (chewing, spice, quiet, delivery, salt, medication); the demo
+     addresses exactly those needs with tag-backed filters and honest
+     guidance-only tips where data cannot verify a need.
+  4. Quality of the Idea — taste is used cross-domain (a music/food taste
+     seeds restaurant picks) rather than as a cuisine keyword search,
+     and health-adjacent needs are deliberately never faked from taste data.
 
 ## Setup
-- `QLOO_API_KEY` env var on the server (Vercel env). Key is issued via
-  Qloo's API Access Key form; earlier Qloo hackathon rules promised a key
-  within 4 hours of the form. Hackathon API base: https://hackathon.api.qloo.com
+- `QLOO_API_KEY` env var on the server (Vercel env, Production + Preview).
+  Key issued via the Qloo Agent Hackathon API Key Request Form.
+  Hackathon API base: https://hackathon.api.qloo.com
 - Run locally: `npm install && npm run dev` (needs the key for live calls;
   without it the API route returns a clear 503, never fake data).
