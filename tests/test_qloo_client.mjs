@@ -12,8 +12,8 @@ function ok(name, cond) {
 const seen = []
 async function mockFetch(url, opts) {
   seen.push({ url, key: opts.headers['X-Api-Key'] })
-  if (url.includes('/v2/search')) {
-    return { ok: true, json: async () => ({ results: { entities: [{ id: 'e1', name: 'Ramen' }] } }) }
+  if (url.includes('/search')) {
+    return { ok: true, json: async () => ({ results: [{ id: 'e1', name: 'Ramen' }] }) }
   }
   if (url.includes('/v2/insights')) {
     return { ok: true, json: async () => ({ results: { entities: [{ id: 'r1', name: 'Noodle House' }] } }) }
@@ -27,11 +27,12 @@ async function mockFetch(url, opts) {
 const qloo = createQlooClient({ apiKey: 'test-key', fetchFn: mockFetch })
 
 const s = await qloo.searchEntities('ramen')
-ok('search returns entities', s.results.entities[0].name === 'Ramen')
+ok('search uses /search and returns a flat results array', Array.isArray(s.results) && s.results[0].name === 'Ramen')
+ok('search sends take', seen[0].url.includes('take=10'))
 
-const r = await qloo.getRecommendations(['urn:entity:artist:1'], 'urn:entity:restaurant')
+const r = await qloo.getRecommendations(['urn:entity:artist:1'], 'urn:entity:place')
 ok('recommend seeds travel in query', seen[1].url.includes('signal.interests.entities'))
-ok('recommend targets restaurant type', seen[1].url.includes('urn%3Aentity%3Arestaurant'))
+ok('recommend targets place type for restaurants', seen[1].url.includes('urn%3Aentity%3Aplace'))
 ok('key sent as header, not in URL', !seen[1].url.includes('test-key') && seen[1].key === 'test-key')
 
 const t = await qloo.searchTags('Japanese')

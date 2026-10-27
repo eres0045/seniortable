@@ -42,9 +42,9 @@ function mockRes() {
 
 process.env.QLOO_API_KEY = 'test-key'
 globalThis.fetch = async (url) => {
-  if (url.includes('/v2/search')) {
-    return { ok: true, json: async () => ({ results: { entities: [
-      { entity_id: 'e1', name: 'Jazz' }, { entity_id: 'e2', name: 'Ramen' } ] } }) }
+  if (url.includes('/search')) {
+    return { ok: true, json: async () => ({ results: [
+      { entity_id: 'e1', name: 'Jazz' }, { entity_id: 'e2', name: 'Ramen' } ] }) }
   }
   if (url.includes('/v2/insights')) {
     return { ok: true, json: async () => ({ results: { entities: [soupPlace, loudPlace] } }) }
@@ -63,8 +63,8 @@ ok('handler echoes seeds', res.body.seeds.includes('Jazz'))
 // Location fallback: insights rejects the location param, accepts without it.
 let insightsCalls = 0
 globalThis.fetch = async (url) => {
-  if (url.includes('/v2/search')) {
-    return { ok: true, json: async () => ({ results: { entities: [{ entity_id: 'e1', name: 'Jazz' }] } }) }
+  if (url.includes('/search')) {
+    return { ok: true, json: async () => ({ results: [{ entity_id: 'e1', name: 'Jazz' }] }) }
   }
   if (url.includes('/v2/insights')) {
     insightsCalls++

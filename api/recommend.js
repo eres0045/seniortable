@@ -22,7 +22,12 @@ export default async function handler(req, res) {
     const qloo = createQlooClient({ apiKey })
     const { likes = '', constraints = [], location = '' } = req.body || {}
     const search = await qloo.searchEntities(likes)
-    const seedEntities = (search.results?.entities || []).slice(0, 5)
+    // /search returns a flat results array; accept the older
+    // results.entities shape too, so a shape change never blanks the page.
+    const searchList = Array.isArray(search.results)
+      ? search.results
+      : (search.results?.entities || [])
+    const seedEntities = searchList.slice(0, 5)
     const seeds = seedEntities.map((e) => e.entity_id || e.id).filter(Boolean)
     const seedNames = seedEntities.map((e) => e.name).filter(Boolean)
     if (!seeds.length) {
@@ -30,13 +35,14 @@ export default async function handler(req, res) {
     }
     let recs
     try {
-      recs = await qloo.getRecommendations(seeds, 'urn:entity:restaurant',
+      recs = await qloo.getRecommendations(seeds, 'urn:entity:place',
         location ? { 'filter.location.query': location } : {})
     } catch (e) {
       // Location param not accepted: fall back to pure taste ranking.
-      recs = await qloo.getRecommendations(seeds, 'urn:entity:restaurant')
+      recs = await qloo.getRecommendations(seeds, 'urn:entity:place')
     }
-    const entities = recs.results?.entities || []
+    const entities = recs.results?.entities
+      || (Array.isArray(recs.results) ? recs.results : [])
     const { results, guidance, note } = applyConstraints(entities, constraints)
     const out = results.map(({ entity, matched }) => ({
       name: entity.name,
